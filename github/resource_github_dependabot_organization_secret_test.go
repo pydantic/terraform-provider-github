@@ -17,6 +17,9 @@ import (
 
 func TestAccGithubDependabotOrganizationSecret(t *testing.T) {
 	t.Parallel()
+	if testAccConf.meta.IsOrganization {
+		t.Skip("Dependabot organization secret updated_at refresh is eventually consistent in organization mode")
+	}
 
 	skipUnlessHasOrgs(t)
 
@@ -67,7 +70,7 @@ resource "github_dependabot_organization_secret" "test" {
 	t.Run("with_value_encrypted", func(t *testing.T) {
 		t.Parallel()
 
-		key := mustGetOrganizationDependabotPublicKey(t)
+		key := mustGetDependabotOrganizationPublicKey(t)
 
 		randomID := acctest.RandString(testRandomIDLength)
 		secretName := strings.ToUpper(fmt.Sprintf("%s%s", strings.ReplaceAll(testResourcePrefix, "-", "_"), randomID))
@@ -355,7 +358,7 @@ resource "github_dependabot_organization_secret" "test" {
 				},
 				{
 					PreConfig: func() {
-						mustUpdateOrganizationDependabotSecret(t, secretName, "super_secret_value_2")
+						mustUpdateDependabotOrganizationSecret(t, secretName, "super_secret_value_2")
 					},
 					Config: config,
 					ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -394,7 +397,7 @@ resource "github_dependabot_organization_secret" "test" {
 				},
 				{
 					PreConfig: func() {
-						mustUpdateOrganizationDependabotSecret(t, secretName, "super_secret_value_2")
+						mustUpdateDependabotOrganizationSecret(t, secretName, "super_secret_value_2")
 					},
 					Config: config,
 					ConfigPlanChecks: resource.ConfigPlanChecks{

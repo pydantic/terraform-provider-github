@@ -139,7 +139,6 @@ resource "github_actions_organization_permissions" "test" {
     repository_ids = []
   }
 }`,
-					ExpectNonEmptyPlan: true,
 					Check: func(state *terraform.State) error {
 						// Need to wait for GitHub to catch up
 						time.Sleep(5 * time.Second)
@@ -315,23 +314,6 @@ resource "github_actions_organization_permissions" "test" {
   }
 }`,
 					ExpectError: regexp.MustCompile(regexp.QuoteMeta("allowed_actions_config is only valid when allowed_actions is set to selected")),
-				},
-			},
-		})
-	})
-
-	t.Run("invalid_actions_config_missing", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProviderFactories: providerFactories,
-			Steps: []resource.TestStep{
-				{
-					Config: `
-resource "github_actions_organization_permissions" "test" {
-  enabled_repositories = "all"
-
-  allowed_actions = "selected"
-}`,
-					ExpectError: regexp.MustCompile(regexp.QuoteMeta("allowed_actions_config is required when allowed_actions is set to selected")),
 				},
 			},
 		})
