@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-github/v88/github"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -292,4 +294,34 @@ func diffTeamCheck(ctx context.Context, client *github.Client, owner string, tea
 	}
 
 	return false, nil
+}
+
+func diffDuplicateUsernameCheck(ctx context.Context, d *schema.ResourceDiff, fieldKey string) error {
+	tflog.Debug(ctx, "diffing nested username check", map[string]any{"field": fieldKey})
+	if d.HasChange(fieldKey) && d.NewValueKnown(fieldKey) {
+		tflog.Trace(ctx, "field is changed and it's new value is known", map[string]any{"field": fieldKey, "new_value": d.Get(fieldKey)})
+		v, diags := d.GetRawConfigAt(cty.GetAttrPath(fieldKey))
+		if diags.HasError() {
+			return fmt.Errorf("error reading '%s' config: %v", fieldKey, diags)
+		}
+
+		if !v.IsNull() && v.IsKnown() {
+			seen := make(map[string]struct{})
+			it := v.ElementIterator()
+			for it.Next() {
+				_, elem := it.Element()
+				val := elem.GetAttr("username")
+				if val.IsNull() || !val.IsKnown() {
+					continue
+				}
+
+				username := strings.ToLower(val.AsString())
+				if _, ok := seen[username]; ok {
+					return fmt.Errorf("duplicate user '%s' found in '%s' collection", username, fieldKey)
+				}
+				seen[username] = struct{}{}
+			}
+		}
+	}
+	return nil
 }
