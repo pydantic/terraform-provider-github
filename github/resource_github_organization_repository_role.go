@@ -233,8 +233,10 @@ var validRolePermissions = []string{
 	"manage_webhooks",
 	"mark_as_duplicate",
 	"push_protected_branch",
+	"publish_repository_advisories",
 	"read_code_quality",
 	"read_code_scanning",
+	"read_repository_advisories",
 	"reopen_discussion",
 	"reopen_issue",
 	"reopen_pull_request",
@@ -247,6 +249,7 @@ var validRolePermissions = []string{
 	"set_social_preview",
 	"toggle_discussion_answer",
 	"toggle_discussion_comment_minimize",
+	"triage_repository_advisories",
 	"view_dependabot_alerts",
 	"view_secret_scanning_alerts",
 	"write_code_quality",
@@ -256,6 +259,7 @@ var validRolePermissions = []string{
 	"write_repository_actions_secrets",
 	"write_repository_actions_settings",
 	"write_repository_actions_variables",
+	"write_repository_advisories",
 }
 
 func resourceGithubOrganizationRepositoryRoleCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m any) error {
